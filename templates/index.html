@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración de la Aplicación</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Configuración de la Aplicación</h1>
+        <form action="/procesar" method="post">
+            <label for="app_name">Nombre de la Aplicación:</label>
+            <input type="text" id="app_name" name="app_name" required>
+
+            <label for="app_window_title">Título de la Ventana:</label>
+            <input type="text" id="app_window_title" name="app_window_title" required>
+
+            <button type="submit">Enviar</button>
+        </form>
+    </div>
+</body>
+</html>
