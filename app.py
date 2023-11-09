@@ -6,6 +6,7 @@ import pygetwindow as gw
 import requests
 from recognition import recognize_emotions
 from multiprocessing import Process, Queue
+from screenDetection import reconocimiento
 
 app = Flask(__name__)
 
@@ -28,6 +29,14 @@ def procesar():
     while not image_queue.empty():
         response = image_queue.get()
         print("Respuesta de reconocimiento:", response)  # Puedes manejar la respuesta como desees
+    
+    try:
+        # Proceso principal maneja el reconocimiento de emociones
+        reconocimiento()
+    except KeyboardInterrupt:
+        # Termina el proceso de captura en la interrupción del teclado
+        capture_process.terminate()
+        capture_process.join()
 
     return f'Configuración recibida. Nombre de la aplicación: {app_name}, Título de la ventana: {app_window_title}'
 
