@@ -14,18 +14,21 @@ params = {
     'return_attributes': return_attributes
 }
 
-def recognize_emotions(image_file):
+def recognize_emotions(image_path):
+
+    image_file = {'image_file': open(image_path, 'rb')}
+
     response = requests.post(url, files=image_file, data=params)
     if response.status_code == 200:
         data = response.json()
-        if data['faces']:
+        if 'faces' in data:
             for idx, face in enumerate(data['faces']):
                 if 'attributes' in face and 'emotion' in face['attributes']:
                     emocion = face['attributes']['emotion']
-                    print(f"Emotion of the face {idx + 1}:", emocion)
+                    print(f"Emoción del rostro {idx + 1}:", emocion)
                 else:
-                    print(f"No emotions were found for the face {idx + 1}")
+                    print(f"No se encontraron emociones para el rostro {idx + 1}")
         else:
-            print("No faces detected")
+            print("No se detectaron rostros en la imagen")
     else:
-        print(f'Error: {response.status_code}, {response.text}')   
+        print(f'Error: {response.status_code}, {response.text}')
