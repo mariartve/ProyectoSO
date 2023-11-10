@@ -13,7 +13,7 @@ def guardar_con_fecha_hora():
 
     # Guardar la imagen con el nombre generado
     plt.savefig(nombre_archivo)
-    
+
     return nombre_archivo  # Devolver el nombre del archivo generado
 
 def limpiar_emociones_json():
@@ -34,6 +34,12 @@ def graficoBarras():
         print("No hay datos disponibles para generar el gráfico.")
         return
 
+    # Verificar que haya al menos una muestra para cada emoción
+    for emotion in emotions_labels:
+        if all(entry['emotions'][emotion] == 0 for entry in data):
+            print(f"No hay muestras para la emoción: {emotion}")
+            return
+
     # Calcular el promedio de cada emoción a lo largo de todas las muestras
     for entry in data:
         emotions = entry['emotions']
@@ -46,8 +52,9 @@ def graficoBarras():
         print("No hay suficientes muestras para generar el gráfico.")
         return
 
+    # Verificar que el denominador no sea cero antes de realizar la división
     for emotion in emotions_labels:
-        emotions_mean[emotion] /= total_samples
+        emotions_mean[emotion] /= total_samples if total_samples > 0 else 1
 
     # Crear un gráfico de barras para el promedio de cada emoción
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -73,13 +80,19 @@ def graficoBarras():
     plt.show()
 
 def graficoPastel():
+    # Verificar que haya al menos una muestra para cada emoción
+    for emotion in emotions_labels:
+        if all(entry['emotions'][emotion] == 0 for entry in data):
+            print(f"No hay muestras para la emoción: {emotion}")
+            return
+
     # Crear un gráfico de pastel para el promedio de emociones
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(10, 6))
     wedges, texts, autotexts = ax.pie(emotions_mean.values(), autopct='%1.1f%%', startangle=90, colors=plt.cm.Paired.colors)
-    
+
     # Agregar una leyenda al cuadro a la derecha del gráfico de pastel
     ax.legend(wedges, emotions_mean.keys(), title="Emociones", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
-    
+
     # Configurar el título
     ax.set_title('Promedio de emociones en todas las muestras')
 

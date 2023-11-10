@@ -6,13 +6,12 @@ import time
 import pyautogui
 import os
 import requests
+from werkzeug.serving import run_simple
 from graficar import graficoBarras, graficoPastel
 
 def ejecutar_graficos():
     graficoBarras()
     graficoPastel()
-
-
 
 # Parámetros para el reconocimiento de emociones
 api_key = 'JLwR83pL00f6I39pBi7N2rnoNRkbzH3y'
@@ -132,7 +131,8 @@ def procesar():
 
     try:
         # Mantener la aplicación en funcionamiento para manejar la interfaz web
-        app.run(debug=True)
+        #app.run(debug=True)
+        pass
     except KeyboardInterrupt:
         # Terminar los procesos en caso de interrupción del teclado
         signal_handler(signal.SIGINT, None) 
@@ -143,4 +143,4 @@ if __name__ == '__main__':
     print("Iniciando la aplicación...")
     # Configurar el manejador de señales para la interrupción de teclado
     signal.signal(signal.SIGINT, signal_handler)
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=False)
