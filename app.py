@@ -1,9 +1,9 @@
+import json
 from flask import Flask, render_template, request
 from multiprocessing import Process, Queue
 import time
 import pyautogui
 import os
-from PIL import Image, ImageDraw
 import requests
 
 # Parámetros para el reconocimiento de emociones
@@ -47,6 +47,21 @@ def recognize_emotions(image_path):
             # Imprimir las emociones en consola
             print(f"Emociones detectadas: {emotions}")
 
+            # Guardar las emociones en un archivo JSON solo si hay emociones detectadas
+            try:
+                with open('emociones.json', 'r') as json_file:
+                    datos_existente = json.load(json_file)
+            except FileNotFoundError:
+                datos_existente = []
+
+            # Añadir las emociones a la lista existente
+            if emotions:
+                datos_existente.append({'emotions': emotions})
+
+            # Guardar la lista actualizada en el archivo JSON
+            with open('emociones.json', 'w') as json_file:
+                json.dump(datos_existente, json_file, indent=2)
+                
             return {
                 'left': face['left'],
                 'top': face['top'],
@@ -60,8 +75,6 @@ def recognize_emotions(image_path):
         print(f"Error en la solicitud al servicio Face++: {e}")
         return None
 
-# ...
-
 def capturar_pantalla(image_queue):
     while True:
         try:
@@ -71,7 +84,7 @@ def capturar_pantalla(image_queue):
             screenshot.save(img_path)
 
             # Obtener la posición del rostro y las emociones
-            face_position = recognize_emotions(img_path)
+            recognize_emotions(img_path)
 
             # No es necesario dibujar un rectángulo en este caso
 
@@ -79,10 +92,6 @@ def capturar_pantalla(image_queue):
             time.sleep(1 / 15)
         except Exception as e:
             print(f"Error en el bucle principal: {e}")
-
-# ...
-
-# ...
 
 @app.route('/')
 def index():

@@ -1,0 +1,57 @@
+[
+  {
+    "emotions": {
+      "anger": 0.005,
+      "disgust": 0.01,
+      "fear": 0.059,
+      "happiness": 99.338,
+      "neutral": 0.167,
+      "sadness": 0.416,
+      "surprise": 0.005
+    }
+  },
+  {
+    "emotions": {
+      "anger": 0.005,
+      "disgust": 0.01,
+      "fear": 0.059,
+      "happiness": 99.338,
+      "neutral": 0.167,
+      "sadness": 0.416,
+      "surprise": 0.005
+    }
+  },
+  {
+    "emotions": {
+      "anger": 0.018,
+      "disgust": 0.297,
+      "fear": 0.019,
+      "happiness": 74.593,
+      "neutral": 23.582,
+      "sadness": 0.018,
+      "surprise": 1.473
+    }
+  },
+  {
+    "emotions": {
+      "anger": 0.013,
+      "disgust": 0.029,
+      "fear": 0.159,
+      "happiness": 0.385,
+      "neutral": 98.355,
+      "sadness": 0.224,
+      "surprise": 0.835
+    }
+  },
+  {
+    "emotions": {
+      "anger": 0.003,
+      "disgust": 0.005,
+      "fear": 0.006,
+      "happiness": 1.084,
+      "neutral": 98.101,
+      "sadness": 0.003,
+      "surprise": 0.798
+    }
+  }
+]
