@@ -1,10 +1,18 @@
 import json
+import signal
 from flask import Flask, render_template, request
 from multiprocessing import Process, Queue
 import time
 import pyautogui
 import os
 import requests
+from graficar import graficoBarras, graficoPastel
+
+def ejecutar_graficos():
+    graficoBarras()
+    graficoPastel()
+
+
 
 # Parámetros para el reconocimiento de emociones
 api_key = 'JLwR83pL00f6I39pBi7N2rnoNRkbzH3y'
@@ -21,8 +29,7 @@ params = {
 }
 
 app = Flask(__name__)
-
-# ...
+capture_process = None  # Variable global
 
 def recognize_emotions(image_path):
     try:
@@ -92,6 +99,18 @@ def capturar_pantalla(image_queue):
             time.sleep(1 / 15)
         except Exception as e:
             print(f"Error en el bucle principal: {e}")
+def signal_handler(sig, frame):
+    global capture_process  # Acceso a la variable global
+    print("Interrupción de teclado detectada. Ejecutando gráficos...")
+    ejecutar_graficos()
+
+    if capture_process is not None:
+        capture_process.terminate()
+        capture_process.join()
+        print("Proceso terminado.")
+    
+    exit(0)
+
 
 @app.route('/')
 def index():
@@ -99,6 +118,9 @@ def index():
 
 @app.route('/procesar', methods=['POST'])
 def procesar():
+
+    global capture_process  # Acceso a la variable global
+
     app_name = request.form['app_name']
     # Eliminamos la obtención del título de la ventana, ya que no se utiliza al capturar toda la pantalla
 
@@ -113,11 +135,12 @@ def procesar():
         app.run(debug=True)
     except KeyboardInterrupt:
         # Terminar los procesos en caso de interrupción del teclado
-        capture_process.terminate()
-        capture_process.join()
+        signal_handler(signal.SIGINT, None) 
 
     return f'Configuración recibida. Nombre de la aplicación: {app_name}'
 
 if __name__ == '__main__':
     print("Iniciando la aplicación...")
+    # Configurar el manejador de señales para la interrupción de teclado
+    signal.signal(signal.SIGINT, signal_handler)
     app.run(debug=True)
