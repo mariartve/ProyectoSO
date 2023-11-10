@@ -1,8 +1,88 @@
 from flask import Flask, render_template, request
 from multiprocessing import Process, Queue
-from screenDetection import capturar_pantalla
+import time
+import pyautogui
+import os
+from PIL import Image, ImageDraw
+import requests
+
+# Parámetros para el reconocimiento de emociones
+api_key = 'JLwR83pL00f6I39pBi7N2rnoNRkbzH3y'
+api_secret = 'XxknnnjxdSZOsRUO1tPE1Mk2rF7j6LKs'
+return_landmark = 1
+return_attributes = 'emotion'
+url = 'https://api-us.faceplusplus.com/facepp/v3/detect'
+
+params = {
+    'api_key': api_key,
+    'api_secret': api_secret,
+    'return_landmark': return_landmark,
+    'return_attributes': return_attributes
+}
 
 app = Flask(__name__)
+
+# ...
+
+def recognize_emotions(image_path):
+    try:
+        # Leer la imagen en formato binario
+        files = {'image_file': open(image_path, 'rb')}
+
+        # Enviar la solicitud al servicio de Face++
+        response = requests.post(url, params=params, files=files)
+        response.raise_for_status()
+
+        # Analizar la respuesta JSON
+        result = response.json()
+
+        # Verificar si se detectaron rostros en la imagen
+        if 'faces' in result and len(result['faces']) > 0:
+            # Obtener la posición del primer rostro detectado
+            face = result['faces'][0]['face_rectangle']
+
+            # Obtener las emociones detectadas
+            emotions = result['faces'][0]['attributes']['emotion']
+
+            # Imprimir las emociones en consola
+            print(f"Emociones detectadas: {emotions}")
+
+            return {
+                'left': face['left'],
+                'top': face['top'],
+                'width': face['width'],
+                'height': face['height']
+            }
+        else:
+            print("No se detectaron rostros en la imagen.")
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"Error en la solicitud al servicio Face++: {e}")
+        return None
+
+# ...
+
+def capturar_pantalla(image_queue):
+    while True:
+        try:
+            screenshot = pyautogui.screenshot()
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            img_path = os.path.join(script_dir, 'full_screen_screenshot.png')
+            screenshot.save(img_path)
+
+            # Obtener la posición del rostro y las emociones
+            face_position = recognize_emotions(img_path)
+
+            # No es necesario dibujar un rectángulo en este caso
+
+            image_queue.put(img_path)  # Poner la ruta de la imagen en la cola
+            time.sleep(1 / 15)
+        except Exception as e:
+            print(f"Error en el bucle principal: {e}")
+
+# ...
+
+# ...
 
 @app.route('/')
 def index():
@@ -11,12 +91,12 @@ def index():
 @app.route('/procesar', methods=['POST'])
 def procesar():
     app_name = request.form['app_name']
-    app_window_title = request.form['app_window_title']
+    # Eliminamos la obtención del título de la ventana, ya que no se utiliza al capturar toda la pantalla
 
     image_queue = Queue()  # Cola para comunicarse entre procesos
 
     # Crear un proceso separado para la captura y reconocimiento
-    capture_process = Process(target=capturar_pantalla, args=(app_window_title, image_queue))
+    capture_process = Process(target=capturar_pantalla, args=(image_queue,))
     capture_process.start()
 
     try:
@@ -27,7 +107,8 @@ def procesar():
         capture_process.terminate()
         capture_process.join()
 
-    return f'Configuración recibida. Nombre de la aplicación: {app_name}, Título de la ventana: {app_window_title}'
+    return f'Configuración recibida. Nombre de la aplicación: {app_name}'
 
 if __name__ == '__main__':
+    print("Iniciando la aplicación...")
     app.run(debug=True)
