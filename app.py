@@ -1,8 +1,10 @@
 import json
 from flask import Flask, render_template, request
+from flask_socketio import SocketIO, emit
 from multiprocessing import Process, Queue
 import time
 import pyautogui
+import pygetwindow as gw
 import os
 import requests
 
@@ -21,7 +23,7 @@ params = {
 }
 
 app = Flask(__name__)
-
+socketio = SocketIO(app)
 # ...
 
 def recognize_emotions(image_path):
@@ -93,6 +95,16 @@ def capturar_pantalla(image_queue):
         except Exception as e:
             print(f"Error en el bucle principal: {e}")
 
+def abrir_ventana(nombre):
+    try:
+        # Busca la ventana por su título
+        ventana = gw.getWindowsWithTitle(nombre)[0]
+        # Cambia el enfoque a la ventana
+        ventana.activate()
+        time.sleep(3)
+    except IndexError:
+        print(f"No se encontró una ventana con el título '{nombre}'")
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -100,9 +112,13 @@ def index():
 @app.route('/procesar', methods=['POST'])
 def procesar():
     app_name = request.form['app_name']
+    app_window = request.form['app_window_title']
     # Eliminamos la obtención del título de la ventana, ya que no se utiliza al capturar toda la pantalla
 
     image_queue = Queue()  # Cola para comunicarse entre procesos
+
+    #Abrir la ventana que se desea capturar
+    abrir_ventana(app_window)
 
     # Crear un proceso separado para la captura y reconocimiento
     capture_process = Process(target=capturar_pantalla, args=(image_queue,))
@@ -110,14 +126,34 @@ def procesar():
 
     try:
         # Mantener la aplicación en funcionamiento para manejar la interfaz web
-        app.run(debug=True)
+        ''' app.run(debug=True) '''
+        pass
     except KeyboardInterrupt:
         # Terminar los procesos en caso de interrupción del teclado
         capture_process.terminate()
         capture_process.join()
 
-    return f'Configuración recibida. Nombre de la aplicación: {app_name}'
+    return render_template('procesar.html')
+
+def enviar_analisis():
+    while True:
+        try:
+            with open('emociones.json', 'r') as json_file:
+                emotions_data = json.load(json_file)
+                socketio.emit('update_emotions', {'emotions_data': emotions_data})
+        except FileNotFoundError:
+            emotions_data = []
+            pass
+        time.sleep(1)
+
 
 if __name__ == '__main__':
-    print("Iniciando la aplicación...")
-    app.run(debug=True)
+    ''' print("Iniciando la aplicación...")
+    app.run(debug=True) '''
+    # Start the SocketIO thread alongside the Flask app
+    socket_process = Process(target=enviar_analisis)
+    socket_process.start()
+
+    # Start the Flask app with SocketIO
+    socketio.run(app, debug=True)
+    

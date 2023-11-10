@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico de Emociones</title>
+    <!-- Incluir la biblioteca Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Gráfico de Emociones</h1>
+    <!-- Crear un elemento canvas para el gráfico -->
+    <canvas id="emotionsGraph" width="800" height="400"></canvas>
+
+    <script>
+        // Inicializar el gráfico de Chart.js
+        var ctx = document.getElementById('emotionsGraph').getContext('2d');
+        var emotionsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Enojo', 'Asco', 'Miedo', 'Felicidad', 'Neutral', 'Tristeza', 'Sorpresa'],
+                datasets: [{
+                    label: 'Distribución de Emociones',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                    data: Array(7).fill(0),
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Conectar al WebSocket para actualizaciones en tiempo real
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        // Escuchar eventos 'update_emotions' y actualizar el gráfico
+        socket.on('update_emotions', function (msg) {
+            var emotionsData = msg.emotions_data;
+            if (emotionsData && emotionsData.length > 0) {
+                // Calcular el porcentaje promedio para cada categoría de emoción
+                var promedios = Array(7).fill(0);
+
+                for (var i = 0; i < emotionsData.length; i++) {
+                    var emotions = emotionsData[i].emotions;
+                    for (var j = 0; j < promedios.length; j++) {
+                        promedios[j] += emotions[Object.keys(emotions)[j]];
+                    }
+                }
+
+                for (var k = 0; k < promedios.length; k++) {
+                    promedios[k] /= emotionsData.length;
+                }
+
+                // Actualizar los datos del gráfico
+                emotionsChart.data.datasets[0].data = promedios;
+
+                // Actualizar el gráfico
+                emotionsChart.update();
+            }
+        });
+    </script>
+</body>
+</html>
