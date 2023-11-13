@@ -1,4 +1,5 @@
 import json
+import signal
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit
 from multiprocessing import Process, Queue
@@ -7,6 +8,12 @@ import pyautogui
 import pygetwindow as gw
 import os
 import requests
+from werkzeug.serving import run_simple
+from graficar import graficoBarras, graficoPastel
+
+def ejecutar_graficos():
+    graficoBarras()
+    graficoPastel()
 
 # Parámetros para el reconocimiento de emociones
 api_key = 'JLwR83pL00f6I39pBi7N2rnoNRkbzH3y'
@@ -23,7 +30,7 @@ params = {
 }
 
 app = Flask(__name__)
-socketio = SocketIO(app)
+
 # ...
 
 def recognize_emotions(image_path):
@@ -94,6 +101,18 @@ def capturar_pantalla(image_queue):
             time.sleep(1 / 15)
         except Exception as e:
             print(f"Error en el bucle principal: {e}")
+def signal_handler(sig, frame):
+    global capture_process  # Acceso a la variable global
+    print("Interrupción de teclado detectada. Ejecutando gráficos...")
+    ejecutar_graficos()
+
+    if capture_process is not None:
+        capture_process.terminate()
+        capture_process.join()
+        print("Proceso terminado.")
+    
+    exit(0)
+
 
 def abrir_ventana(nombre):
     try:
@@ -111,6 +130,9 @@ def index():
 
 @app.route('/procesar', methods=['POST'])
 def procesar():
+
+    global capture_process  # Acceso a la variable global
+
     app_name = request.form['app_name']
     app_window = request.form['app_window_title']
     # Eliminamos la obtención del título de la ventana, ya que no se utiliza al capturar toda la pantalla
@@ -126,12 +148,10 @@ def procesar():
 
     try:
         # Mantener la aplicación en funcionamiento para manejar la interfaz web
-        ''' app.run(debug=True) '''
-        pass
+        app.run(debug=True)
     except KeyboardInterrupt:
         # Terminar los procesos en caso de interrupción del teclado
-        capture_process.terminate()
-        capture_process.join()
+        signal_handler(signal.SIGINT, None) 
 
     return render_template('procesar.html')
 
@@ -148,12 +168,5 @@ def enviar_analisis():
 
 
 if __name__ == '__main__':
-    ''' print("Iniciando la aplicación...")
-    app.run(debug=True) '''
-    # Start the SocketIO thread alongside the Flask app
-    socket_process = Process(target=enviar_analisis)
-    socket_process.start()
-
-    # Start the Flask app with SocketIO
-    socketio.run(app, debug=True)
-    
+    print("Iniciando la aplicación...")
+    app.run(debug=True)
