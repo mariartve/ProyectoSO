@@ -1,26 +1,42 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Configuración de la Aplicación</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.3/socket.io.js"></script>
-
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
     <div class="container">
-        <h1>Configuración de la Aplicación</h1>
-        <form action="/procesar" method="post">
-            <label for="app_name">Nombre de la Aplicación:</label>
-            <input type="text" id="app_name" name="app_name" required>
+      <h1>Configuración de la Aplicación</h1>
+      <form action="/procesar" method="post">
+        <label for="app_name">Nombre de la Aplicación:</label>
+        <input type="text" id="app_name" name="app_name" required />
 
-            <label for="app_window_title">Título de la Ventana:</label>
-            <input type="text" id="app_window_title" name="app_window_title" required>
+        <label for="app_window_title">Título de la Ventana:</label>
+        <input
+          type="text"
+          id="app_window_title"
+          name="app_window_title"
+          required
+        />
 
-            <button type="submit">Enviar</button>
-        </form>
+        <label for="duration">Duración de la Sesión:</label>
+        <select id="duration" name="duration" required>
+          <option value="1">1 minutos</option>
+          <option value="5">5 minutos</option>
+          <option value="15">15 minutos</option>
+          <option value="30">30 minutos</option>
+          <option value="60">60 minutos</option>
+        </select>
+
+        <button type="submit">Enviar</button>
+      </form>
     </div>
-</body>
+  </body>
 </html>
