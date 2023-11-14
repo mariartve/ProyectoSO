@@ -83,9 +83,9 @@ def recognize_emotions(image_path):
         return None
 
 def capturar_pantalla(image_queue, user_duration):
+    global capture_process
     try:
         start_time = time.time()
-
         while not exit_flag:
             screenshot = pyautogui.screenshot()
             script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -108,8 +108,9 @@ def capturar_pantalla(image_queue, user_duration):
         print(f"Error en el bucle principal: {e}")
     finally:
         ejecutar_graficos()
-        capture_process.terminate()
-        capture_process.join()
+        if capture_process is not None:
+            capture_process.terminate()
+            capture_process.join(user_duration)
         print("Proceso de captura terminado.")
 
 def signal_handler(sig, frame):
