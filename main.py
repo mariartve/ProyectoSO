@@ -3,15 +3,16 @@ import signal
 from flask import Flask, render_template, request
 from multiprocessing import Process, Queue
 import time
+from datetime import datetime
 import pyautogui
 import pygetwindow as gw
 import os
 import requests
-from graficar import graficoBarras, graficoPastel
+from graficar import graficoBarras, graficoPastel, limpiar_emociones_json
 
-def ejecutar_graficos():
-    graficoBarras()
-    graficoPastel()
+def ejecutar_graficos(period):
+    graficoBarras(period)
+    graficoPastel(period)
 
 # Parámetros para el reconocimiento de emociones
 api_key = 'JLwR83pL00f6I39pBi7N2rnoNRkbzH3y'
@@ -31,7 +32,12 @@ app = Flask(__name__)
 capture_process = None  # Variable global
 exit_flag = False  # Variable global para indicar al proceso de captura cuándo debe finalizar
 
-def recognize_emotions(image_path):
+def getTime():
+    start_time = datetime.now()
+    start_time_str = start_time.strftime("%H:%M:%S")
+    return start_time_str
+
+def recognize_emotions(image_path, period):
     try:
         # Leer la imagen en formato binario
         files = {'image_file': open(image_path, 'rb')}
@@ -63,7 +69,8 @@ def recognize_emotions(image_path):
 
             # Añadir las emociones a la lista existente
             if emotions:
-                datos_existente.append({'emotions': emotions})
+                datos_existente.append({'emotions': emotions, 'period': period})
+
 
             # Guardar la lista actualizada en el archivo JSON
             with open('emociones.json', 'w') as json_file:
@@ -85,6 +92,7 @@ def recognize_emotions(image_path):
 def capturar_pantalla(image_queue, user_duration):
     global capture_process
     try:
+        print(f"Proceso iniciado a {getTime()}")
         start_time = time.time()
         while not exit_flag:
             screenshot = pyautogui.screenshot()
@@ -92,38 +100,51 @@ def capturar_pantalla(image_queue, user_duration):
             img_path = os.path.join(script_dir, 'full_screen_screenshot.png')
             screenshot.save(img_path)
 
-            # Obtener la posición del rostro y las emociones
-            recognize_emotions(img_path)
+            if user_duration == 5:
+                capture_interval = 1
+            else:
+                capture_interval = 3
 
+            elapsed_time = time.time() - start_time
+            # Obtener la posición del rostro y las emociones
+            if elapsed_time <= capture_interval * 60:  # Antes
+                recognize_emotions(img_path, "Antes")
+            elif capture_interval * 60 < elapsed_time <= (user_duration - capture_interval) * 60:  # Durante
+                recognize_emotions(img_path, "Durante")
+            elif (user_duration - capture_interval) * 60 < elapsed_time < user_duration * 60: # Despues
+                recognize_emotions(img_path, "Despues")
+            elif elapsed_time >= user_duration * 60:
+                break
             # No es necesario dibujar un rectángulo en este caso
 
             image_queue.put(img_path)  # Poner la ruta de la imagen en la cola
             time.sleep(1 / 15)
 
-            elapsed_time = time.time() - start_time
-            if elapsed_time >= user_duration * 60:
-                break
-
     except Exception as e:
         print(f"Error en el bucle principal: {e}")
     finally:
-        ejecutar_graficos()
+        ejecutar_graficos("Antes")
+        ejecutar_graficos("Durante")
+        ejecutar_graficos("Despues")
+        ejecutar_graficos("General")
         if capture_process is not None:
             capture_process.terminate()
             capture_process.join(user_duration)
-        print("Proceso de captura terminado.")
+            limpiar_emociones_json()
+            print("Proceso de captura terminado a las {getTime()}.")
 
 def signal_handler(sig, frame):
     global capture_process  # Acceso a la variable global
     global exit_flag
     print("Interrupción de teclado detectada. Ejecutando gráficos...")
-    ejecutar_graficos()
+    ejecutar_graficos("General")
 
     exit_flag = True  # Indicar al proceso de captura que debe finalizar
 
     if capture_process is not None:
         capture_process.terminate()
         capture_process.join()
+        limpiar_emociones_json()
         print("Proceso terminado.")
     
     exit(0)
