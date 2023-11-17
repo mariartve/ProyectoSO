@@ -3,7 +3,7 @@ Este proyecto programado es un programa en Python que utiliza Flask para crear u
 
 # Principales características
 
-## Recopilación y Almacenamiento de Datos:
+## Recopilación y Almacenamiento de Datos
 
 La aplicación Flask permite a los usuarios especificar la ventana de la aplicación a monitorear.
 La función capturar_pantalla captura continuamente la pantalla, guarda capturas de pantalla y detecta emociones en las imágenes capturadas utilizando la API de Face++.
@@ -13,16 +13,16 @@ Generación de Gráficos:
 Se generan dos tipos de gráficos, gráficos de barras (graficoBarras) y gráficos de pastel (graficoPastel), basados en los datos promedio de emociones recopilados con el tiempo.
 La función guardar_con_fecha_hora se utiliza para guardar los gráficos generados con una marca de tiempo.
 
-## Aplicación Web con Flask:
+## Aplicación Web con Flask
 La aplicación Flask tiene dos rutas: '/' para la página de inicio y '/procesar' para procesar las entradas del usuario.
 Los usuarios pueden especificar el título de la ventana de la aplicación a través de un formulario en la página de inicio.
 La ruta procesar inicia un proceso separado (capturar_pantalla) para capturar continuamente emociones mientras mantiene en funcionamiento la aplicación principal de Flask.
 
-## Manejo de Señales:
+## Manejo de Señales
 El script maneja interrupciones de teclado (Ctrl+C) ejecutando la función signal_handler.
 Cuando se interrumpe, ejecuta la función ejecutar_graficos para generar gráficos y termina el proceso de captura.
 
-## Dependencias:
+## Dependencias
 El script depende de varias bibliotecas de Python, incluyendo Flask, Matplotlib, NumPy y requests.
 También requiere la API de Face++ para el reconocimiento de emociones.
 
