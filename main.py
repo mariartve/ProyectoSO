@@ -29,6 +29,7 @@ params = {
 
 app = Flask(__name__)
 capture_process = None  # Variable global
+exit_flag = False  # Variable global para indicar al proceso de captura cuándo debe finalizar
 
 def recognize_emotions(image_path):
     try:
@@ -81,9 +82,11 @@ def recognize_emotions(image_path):
         print(f"Error en la solicitud al servicio Face++: {e}")
         return None
 
-def capturar_pantalla(image_queue):
-    while True:
-        try:
+def capturar_pantalla(image_queue, user_duration):
+    global capture_process
+    try:
+        start_time = time.time()
+        while not exit_flag:
             screenshot = pyautogui.screenshot()
             script_dir = os.path.dirname(os.path.abspath(__file__))
             img_path = os.path.join(script_dir, 'full_screen_screenshot.png')
@@ -96,13 +99,27 @@ def capturar_pantalla(image_queue):
 
             image_queue.put(img_path)  # Poner la ruta de la imagen en la cola
             time.sleep(1 / 15)
-        except Exception as e:
-            print(f"Error en el bucle principal: {e}")
+
+            elapsed_time = time.time() - start_time
+            if elapsed_time >= user_duration * 60:
+                break
+
+    except Exception as e:
+        print(f"Error en el bucle principal: {e}")
+    finally:
+        ejecutar_graficos()
+        if capture_process is not None:
+            capture_process.terminate()
+            capture_process.join(user_duration)
+        print("Proceso de captura terminado.")
 
 def signal_handler(sig, frame):
     global capture_process  # Acceso a la variable global
+    global exit_flag
     print("Interrupción de teclado detectada. Ejecutando gráficos...")
-    ejecutar_graficos()
+    ''' ejecutar_graficos() '''
+
+    exit_flag = True  # Indicar al proceso de captura que debe finalizar
 
     if capture_process is not None:
         capture_process.terminate()
@@ -144,6 +161,7 @@ def procesar():
 
     app_name = request.form['app_name']
     app_window = request.form['app_window_title']
+    user_duration = int(request.form['duration'])
 
     #Abrir la ventana que se desea capturar
     abrir_ventana(app_window)
@@ -151,7 +169,7 @@ def procesar():
     image_queue = Queue()  # Cola para comunicarse entre procesos
 
     # Crear un proceso separado para la captura y reconocimiento
-    capture_process = Process(target=capturar_pantalla, args=(image_queue,))
+    capture_process = Process(target=capturar_pantalla, args=(image_queue, user_duration))
     capture_process.start()
 
     try:
