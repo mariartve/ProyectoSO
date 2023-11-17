@@ -117,7 +117,7 @@ def signal_handler(sig, frame):
     global capture_process  # Acceso a la variable global
     global exit_flag
     print("Interrupción de teclado detectada. Ejecutando gráficos...")
-    ejecutar_graficos()
+    ''' ejecutar_graficos() '''
 
     exit_flag = True  # Indicar al proceso de captura que debe finalizar
 

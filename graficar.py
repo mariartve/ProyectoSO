@@ -34,11 +34,7 @@ def graficoBarras():
         print("No hay datos disponibles para generar el gráfico.")
         return
 
-    # Verificar que haya al menos una muestra para cada emoción
-    for emotion in emotions_labels:
-        if all(entry['emotions'][emotion] == 0 for entry in data):
-            print(f"No hay muestras para la emoción: {emotion}")
-            return
+    
 
     # Calcular el promedio de cada emoción a lo largo de todas las muestras
     for entry in data:
@@ -80,11 +76,6 @@ def graficoBarras():
     plt.show()
 
 def graficoPastel():
-    # Verificar que haya al menos una muestra para cada emoción
-    for emotion in emotions_labels:
-        if all(entry['emotions'][emotion] == 0 for entry in data):
-            print(f"No hay muestras para la emoción: {emotion}")
-            return
 
     # Crear un gráfico de pastel para el promedio de emociones
     fig, ax = plt.subplots(figsize=(10, 6))
