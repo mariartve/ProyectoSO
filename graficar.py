@@ -29,31 +29,24 @@ with open('emociones.json', 'r') as file:
 emotions_labels = ['anger', 'disgust', 'fear', 'happiness', 'neutral', 'sadness', 'surprise']
 emotions_mean = {emotion: 0 for emotion in emotions_labels}
 
-def graficoBarras(period):
-    if period.lower() == 'general':
-        # Grafica toda la información del json
-        data_source = data
-    else:
-        # Grafica la información de un periodo especifico (Antes, Durante, Despues)
-        data_source = [entry for entry in data if entry.get('period') == period.lower()]
-
-    if not data_source:
+def graficoBarras():
+    if not data:
         print("No hay datos disponibles para generar el gráfico.")
         return
 
     # Verificar que haya al menos una muestra para cada emoción
     for emotion in emotions_labels:
-        if all(entry['emotions'][emotion] == 0 for entry in data_source):
+        if all(entry['emotions'][emotion] == 0 for entry in data):
             print(f"No hay muestras para la emoción: {emotion}")
             return
 
     # Calcular el promedio de cada emoción a lo largo de todas las muestras
-    for entry in data_source:
+    for entry in data:
         emotions = entry['emotions']
         for emotion in emotions_labels:
             emotions_mean[emotion] += emotions[emotion]
 
-    total_samples = len(data_source)
+    total_samples = len(data)
 
     if total_samples == 0:
         print("No hay suficientes muestras para generar el gráfico.")
@@ -82,22 +75,11 @@ def graficoBarras(period):
     print(f"Imagen guardada: {nombre_archivo}")
 
     # Limpiar el archivo emociones.json
-    ''' limpiar_emociones_json() '''
+    limpiar_emociones_json()
 
     plt.show()
 
-def graficoPastel(period):
-    if period.lower() == 'general':
-        # Grafica toda la información del json
-        data_source = data
-    else:
-        # Grafica la información de un periodo especifico (Antes, Durante, Despues)
-        data_source = [entry for entry in data if entry.get('period') == period.lower()]
-
-    if not data_source:
-        print("No hay datos disponibles para generar el gráfico.")
-        return
-
+def graficoPastel():
     # Verificar que haya al menos una muestra para cada emoción
     for emotion in emotions_labels:
         if all(entry['emotions'][emotion] == 0 for entry in data):
@@ -119,6 +101,6 @@ def graficoPastel(period):
     print(f"Imagen guardada: {nombre_archivo}")
 
     # Limpiar el archivo emociones.json
-    ''' limpiar_emociones_json() '''
+    limpiar_emociones_json()
 
     plt.show()
