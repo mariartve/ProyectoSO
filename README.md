@@ -1,7 +1,7 @@
 # Proyecto Principios de Sistemas Operativos - TEC
 Este proyecto programado es un programa en Python que utiliza Flask para crear una aplicación web que captura emociones a través de una cámara web, reconoce las emociones utilizando la API de Face++, y muestra los resultados en tiempo real. Los datos de emociones se guardan en un archivo JSON, y también se han implementado funciones para generar gráficos de barras y de pastel basados en los datos de emociones recopilados.
 
-# Principales características:
+# Principales características
 
 ## Recopilación y Almacenamiento de Datos:
 
